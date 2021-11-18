@@ -165,10 +165,6 @@ namespace JobReport
             con.Open();
             Console.WriteLine("Connected to Oracle" + con.ServerVersion);
 
-
-
-
-
             double unix_start = GetUnix(DateTime.Now.AddDays(-1));
 
             double unix_stop = GetUnix(DateTime.Now);
