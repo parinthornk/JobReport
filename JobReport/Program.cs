@@ -157,17 +157,6 @@ namespace JobReport
         public static void Main(string[] args)
         {
 
-            var conn_string_1 = "Data Source=10.232.108.221:1521/WSO2PRD;User Id=AM_ANALYTICS_SHARE;Password=WSO2PRD;Min Pool Size=15;Connection Lifetime=180;"; ;
-            /*
-                        //var connection_string = "Data Source=10.232.108.221,1521; Database=WSO2PRD; User Id=AM_ANALYTICS_SHARE; Password=WSO2PRD;";
-
-                        var conn = new OracleConnection(conn_string_1);
-
-                        conn.Open();
-
-                        conn.Close();*/
-
-
 
             OracleConnection con = new OracleConnection();
 
