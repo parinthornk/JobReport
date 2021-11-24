@@ -27,7 +27,7 @@ namespace JobReport
         public string Name { get; set; } = string.Empty;
         public int Count { get; set; }
 
-        public static AppCountInfo[] GetData()
+        public static AppCountInfo[] GetExampleData()
         {
             return new AppCountInfo[]
             {
