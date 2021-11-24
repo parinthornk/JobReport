@@ -7,10 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobReport", "JobReport\JobR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobReport.DataServices", "jobReport.DataServices\jobReport.DataServices.csproj", "{5BC164C8-9FCB-4889-A838-58C1E4B8FF5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{5240A984-E1D2-434B-95DA-F669E4179D76}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test Charts", "Test Charts\Test Charts.csproj", "{84B9738B-7DB6-44DA-845D-E406511DAA5A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,14 +21,6 @@ Global
 		{5BC164C8-9FCB-4889-A838-58C1E4B8FF5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BC164C8-9FCB-4889-A838-58C1E4B8FF5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BC164C8-9FCB-4889-A838-58C1E4B8FF5C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5240A984-E1D2-434B-95DA-F669E4179D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5240A984-E1D2-434B-95DA-F669E4179D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5240A984-E1D2-434B-95DA-F669E4179D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5240A984-E1D2-434B-95DA-F669E4179D76}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84B9738B-7DB6-44DA-845D-E406511DAA5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84B9738B-7DB6-44DA-845D-E406511DAA5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84B9738B-7DB6-44DA-845D-E406511DAA5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84B9738B-7DB6-44DA-845D-E406511DAA5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
