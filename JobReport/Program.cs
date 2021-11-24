@@ -19,11 +19,18 @@ namespace JobReport
 {
     public class Program
     {
+        public static bool demo = true;
         public static void Main(string[] args)
         {
-            QueryManager.LoadData();
+            // phupha
+            QueryManager.CalculateSessionDateTime();
+            if (!demo)
+            {
+                QueryManager.LoadData();
+            }
+
+            // mod
             GenerateUI.CreatePDF();
-            EmailManager.Send();
         }
     }
 }

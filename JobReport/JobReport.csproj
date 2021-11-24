@@ -148,7 +148,6 @@
     <Compile Include="Email\EmailManager.cs" />
     <Compile Include="UI\GenerateUI.cs" />
     <Compile Include="Query\Calculation.cs" />
-    <Compile Include="Query\DataStructure.cs" />
     <Compile Include="Query\Method_Query.cs" />
     <Compile Include="Query\OracleConnection1.cs" />
     <Compile Include="Program.cs" />

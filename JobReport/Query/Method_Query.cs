@@ -82,6 +82,29 @@ namespace JobReport
     {
         public string ApplicationName { get; set; }
         public int HIT { get; set; }
+
+        private class Sortable : IComparer<log_API_for_Time>
+        {
+            public int Compare(log_API_for_Time x, log_API_for_Time y)
+            {
+                if (x.HIT > y.HIT)
+                {
+                    return -1;
+                }
+                if (x.HIT < y.HIT)
+                {
+                    return +1;
+                }
+                return 0;
+            }
+        }
+
+        public static List<log_API_for_Time> Sort(List<log_API_for_Time> unsorted)
+        {
+            var tmp = unsorted.ToArray();
+            Array.Sort(tmp, new Sortable());
+            return tmp.ToList();
+        }
     }
 
     public class AverageTime
