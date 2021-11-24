@@ -12,6 +12,8 @@ namespace JobReport
 
         public static void LoadData()
         {
+
+
             Calculation Cal = new Calculation();
             Method_Query MQ = new Method_Query();
 

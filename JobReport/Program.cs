@@ -4,6 +4,7 @@ using jobReport.DataServices;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.OracleClient;
 using System.Data.SqlClient;
@@ -22,15 +23,18 @@ namespace JobReport
         public static bool demo = true;
         public static void Main(string[] args)
         {
-            // phupha
+            // phupha, query
             QueryManager.CalculateSessionDateTime();
             if (!demo)
             {
                 QueryManager.LoadData();
             }
 
-            // mod
+            // mod, create PDF
             GenerateUI.CreatePDF();
+
+            // phupha, send mail
+            EmailManager.Send();
         }
     }
 }

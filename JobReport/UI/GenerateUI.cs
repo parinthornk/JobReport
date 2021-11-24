@@ -572,8 +572,8 @@ namespace JobReport
             var table_complex_left = new PdfPTable(1);
             table_complex_left.SetWidths(new float[] { 100 });
             table_complex_left.WidthPercentage = 100;
-            //table_complex_left.AddCell(new PdfPCell(chart_pie) { BorderWidth = 0, });
-            table_complex_left.AddCell(new PdfPCell(chart_line) { BorderWidth = 0, });
+            table_complex_left.AddCell(new PdfPCell(chart_pie) { BorderWidth = 0, });
+            //table_complex_left.AddCell(new PdfPCell(chart_line) { BorderWidth = 0, });
             table_complex.AddCell(new PdfPCell(table_complex_left) { BorderWidth = 0, });
 
             // little space in the middle
@@ -596,11 +596,10 @@ namespace JobReport
             // ---------------------------------------------------------------------------------------- //
 
             // file name
-            var month = QueryManager.GetSessionDateTimeBegin().ToString("yyyy MMM", CultureInfo.CreateSpecificCulture("en-US")).ToUpper();
-            var file_name = "Transaction Report " + month + ".pdf";
+            var file_name = GetPdfFileName();
 
             var document = new Document(PageSize.A4);
-            FileStream fs = new FileStream(file_name, FileMode.Create, FileAccess.Write, FileShare.None);
+            FileStream fs = new FileStream(file_name + ".pdf", FileMode.Create, FileAccess.Write, FileShare.None);
             PdfWriter.GetInstance(document, fs);
 
             document.Open();
@@ -626,6 +625,12 @@ namespace JobReport
             document.Add(table_complex);
 
             document.Close();
+        }
+
+        public static string GetPdfFileName()
+        {
+            var yyyy_MM = QueryManager.GetSessionDateTimeBegin().ToString("yyyy_MM");
+            return "Transaction Report " + yyyy_MM;
         }
     }
 }
