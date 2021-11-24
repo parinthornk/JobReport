@@ -11,7 +11,7 @@ namespace JobReport
 {
     internal class OracleConnection1
     {
-        private static string ConnString = "Data Source=10.232.108.221:1521/WSO2PRD;User Id=AM_ANALYTICS_SHARE;Password=WSO2PRD;Min Pool Size=15;Connection Lifetime=180;";
+        
 
         /*
         public void Connection()
@@ -30,7 +30,7 @@ namespace JobReport
         {
             Oracle.ManagedDataAccess.Client.OracleConnection conn = new Oracle.ManagedDataAccess.Client.OracleConnection();
             //using connection string attributes to connect to Oracle Database
-            conn.ConnectionString = ConnString;
+            conn.ConnectionString = Program.GetConnectionString();
 
             {
                 using (OracleCommand command = new OracleCommand(query, conn))

@@ -540,7 +540,80 @@ namespace JobReport
             return pic;
         }
 
-        public static void CreatePDF()
+        private static PdfPTable CreateBillingDetail()
+        {
+            var table_main = new PdfPTable(1);
+            table_main.SetWidths(new float[] { 100f });
+            table_main.WidthPercentage = 100;
+
+            // -------------------------------------------- detail 1
+
+            var table_01 = new PdfPTable(1);
+            table_01.SetWidths(new float[] { 100f });
+            table_01.WidthPercentage = 100;
+            table_01.AddCell("Billing Detail for PTT");
+            table_main.AddCell(table_01);
+
+            var table_02 = new PdfPTable(2);
+            table_02.SetWidths(new float[] { 50f, 50f });
+            table_02.WidthPercentage = 100;
+            table_02.AddCell("From");
+            table_02.AddCell("[System.String]");
+            table_02.AddCell("To");
+            table_02.AddCell("[System.String]");
+            table_main.AddCell(table_02);
+
+            var table_03 = new PdfPTable(2);
+            table_03.SetWidths(new float[] { 50f, 50f });
+            table_03.WidthPercentage = 100;
+            table_03.AddCell("Total Usage Transaction");
+            table_03.AddCell("[System.String]");
+            table_main.AddCell(table_03);
+
+            // --------------------------------------------
+
+            table_main.AddCell(" ");
+            table_main.AddCell(" ");
+
+            // -------------------------------------------- detail 2
+
+            var table_04 = new PdfPTable(4);
+            table_04.SetWidths(new float[] { 25f, 25f, 25f, 25f });
+            table_04.WidthPercentage = 100;
+            table_04.AddCell("Detail");
+            table_04.AddCell("Unit");
+            table_04.AddCell("Price/Unit");
+            table_04.AddCell("Cost");
+            table_main.AddCell(table_04);
+
+            var table_05 = new PdfPTable(1);
+            table_05.SetWidths(new float[] { 100f });
+            table_05.WidthPercentage = 100;
+            table_05.AddCell("Current Package");
+            table_main.AddCell(table_05);
+
+            var table_06 = new PdfPTable(4);
+            table_06.SetWidths(new float[] { 25f, 25f, 25f, 25f });
+            table_06.WidthPercentage = 100;
+            table_06.AddCell("Package \"Unlimited\"");
+            table_06.AddCell("1");
+            table_06.AddCell("[System.String]");
+            table_06.AddCell("[System.String]");
+            table_main.AddCell(table_06);
+
+            var table_07 = new PdfPTable(2);
+            table_07.SetWidths(new float[] { 50f, 50f });
+            table_07.WidthPercentage = 100;
+            table_07.AddCell("Total Cost");
+            table_07.AddCell("[System.String]");
+            table_main.AddCell(table_07);
+
+            // --------------------------------------------
+
+            return table_main;
+        }
+
+        public static void CreatePdfReport()
         {
             // header table
             var table_header = CreateTableHeader();
@@ -595,42 +668,42 @@ namespace JobReport
 
             // ---------------------------------------------------------------------------------------- //
 
-            // file name
-            var file_name = GetPdfFileName();
+            // billing
+            var billing_detail = CreateBillingDetail();
 
+            // create file
+            var file_name = GetPdfFileName();
             var document = new Document(PageSize.A4);
             FileStream fs = new FileStream(file_name + ".pdf", FileMode.Create, FileAccess.Write, FileShare.None);
             PdfWriter.GetInstance(document, fs);
-
             document.Open();
 
+            // page transaction summary
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));
-
             document.Add(table_header);
-
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));
-
             document.Add(table_response_time_head);
-
             document.Add(new Paragraph(new Chunk(" ", new Font(Font.FontFamily.COURIER, 5f))));
-
             document.Add(table_response_time_body);
-
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));
-
             document.Add(table_complex);
+
+            // page billing
+            document.NewPage();
+            document.Add(new Paragraph(" "));
+            document.Add(billing_detail);
 
             document.Close();
         }
 
         public static string GetPdfFileName()
         {
-            var yyyy_MM = QueryManager.GetSessionDateTimeBegin().ToString("yyyy_MM");
-            return "Transaction Report " + yyyy_MM;
+            var yyyy_MM = QueryManager.GetSessionDateTimeBegin().ToString("yyyy_MM", CultureInfo.CreateSpecificCulture("en-US"));
+            return "Transaction Report " + Program.AppName + " " + yyyy_MM;
         }
     }
 }
