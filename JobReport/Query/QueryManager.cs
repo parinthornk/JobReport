@@ -8,7 +8,7 @@ namespace JobReport
 {
     public class QueryManager
     {
-        private static DateTime time_end, time_begin;
+        private static DateTime time_end, time_begin, time_query_begin, time_query_end;
 
         public static void LoadData()
         {
@@ -16,7 +16,7 @@ namespace JobReport
             Method_Query MQ = new Method_Query();
 
             ////----- 1
-            List<log_API_for_Time> LTime = MQ.GetApplicationTimeLog(Cal.GetUnix(DateTime.Now.AddDays(-1)), Cal.GetUnix(DateTime.Now));
+            List<log_API_for_Time> LTime = MQ.GetApplicationTimeLog(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
 
             foreach (log_API_for_Time LT in LTime)
             {
@@ -24,7 +24,7 @@ namespace JobReport
             }
 
             ////----- 2
-            List<AverageTime> LGAT = MQ.GetAverageTime(Cal.GetUnix(DateTime.Now.AddDays(-1)), Cal.GetUnix(DateTime.Now));
+            List<AverageTime> LGAT = MQ.GetAverageTime(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
 
             foreach (AverageTime T in LGAT)
             {
@@ -32,12 +32,13 @@ namespace JobReport
             }
 
             ////----- 3
-            List<Timestamprequest> LTP = MQ.GetTimestamprequest(Cal.GetUnix(DateTime.Now.AddDays(-1)), Cal.GetUnix(DateTime.Now));
+            List<Timestamprequest> LTP = MQ.GetTimestamprequest(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
 
-            foreach (Timestamprequest T in LTP)
+            /*foreach (Timestamprequest T in LTP)
             {
                 Console.WriteLine("GetTimestamprequest  : " + " Requesttimestamp = " + T.Requesttimestamp + " , Responsecode = " + T.Responsecode + " , Servicetime = " + T.Servicetime);
-            }
+            }*/
+            Console.WriteLine("LTP.Count, " + LTP.Count);
 
             // these will be used in UI generation
             list_hit = new List<log_API_for_Time>(LTime);
@@ -53,6 +54,12 @@ namespace JobReport
             time_end = new DateTime(now.Year, now.Month, 1, 0, 0, 0);
             var tmp = time_end.AddDays(-1);
             time_begin = new DateTime(tmp.Year, tmp.Month, 1, 0, 0, 0);
+
+            // use 23:59:59.999 on the last day of month
+            time_end = new DateTime(time_end.Ticks - 1);
+
+            time_query_begin = time_begin.ToUniversalTime();
+            time_query_end = time_end.ToUniversalTime();
         }
 
         internal static DateTime GetSessionDateTimeBegin()
@@ -63,6 +70,16 @@ namespace JobReport
         internal static DateTime GetSessionDateTimeEnd()
         {
             return time_end;
+        }
+
+        internal static DateTime GetQueryTimeBegin()
+        {
+            return time_query_begin;
+        }
+
+        internal static DateTime GetQueryTimeEnd()
+        {
+            return time_query_end;
         }
 
         private static List<log_API_for_Time> list_hit;

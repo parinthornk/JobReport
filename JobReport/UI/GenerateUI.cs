@@ -38,6 +38,30 @@ namespace JobReport
             }
         }
 
+        private static BaseColor ColorWhite
+        {
+            get
+            {
+                return new BaseColor(255, 255, 255);
+            }
+        }
+
+        private static BaseColor ColorOrangeHard
+        {
+            get
+            {
+                return new BaseColor(255, 153, 0);
+            }
+        }
+
+        private static BaseColor ColorOrangeSoft
+        {
+            get
+            {
+                return new BaseColor(255, 205, 153);
+            }
+        }
+
         private static void Main_old(string[] args)
         {
             bool isVPN = false;
@@ -130,6 +154,22 @@ namespace JobReport
             //smtp sendmail boripan.c@,tawit.c@,arisa.p@ ,zpanuwat.p@,zphumet.a@,parinthorn.k@
         }
 
+        private static PdfPTable CreateReportTitle()
+        {
+            var font_style = GetFont(12f, Font.NORMAL, ColorDarkBlue);
+            var table = new PdfPTable(1);
+            table.SetWidths(new float[] { 100f });
+            table.WidthPercentage = 100;
+            table.AddCell(new PdfPCell(new Phrase(new Chunk("Transaction summary for " + Program.AppName, font_style)))
+            {
+                Border = 0,
+                HorizontalAlignment = Element.ALIGN_LEFT,
+                PaddingTop = 10f,
+                PaddingBottom = 10f,
+            });
+            return table;
+        }
+
         private static PdfPTable CreateTableHeader()
         {
             var font_style_col_header = GetFont(8f, Font.NORMAL, ColorDarkBlue);
@@ -157,7 +197,7 @@ namespace JobReport
 
             var text_date_format = "dd/MMM/yyy";
             var text_date_begin = QueryManager.GetSessionDateTimeBegin().ToString(text_date_format, CultureInfo.CreateSpecificCulture("en-US")).ToUpper();
-            var text_date_end = QueryManager.GetSessionDateTimeEnd().AddDays(-1).ToString(text_date_format, CultureInfo.CreateSpecificCulture("en-US")).ToUpper();
+            var text_date_end = QueryManager.GetSessionDateTimeEnd().ToString(text_date_format, CultureInfo.CreateSpecificCulture("en-US")).ToUpper();
 
             table.AddCell(new PdfPCell(new Phrase(new Chunk(text_date_begin, font_style_col_body)))
             {
@@ -445,7 +485,7 @@ namespace JobReport
             });
             return table;
         }
-        
+
         private static Image CreateChartPie()
         {
             var data = QueryManager.GetListHit().ToArray();
@@ -540,8 +580,45 @@ namespace JobReport
             return pic;
         }
 
+        private static string money_format(object prz)
+        {
+            var t = string.Format("{0:0.00}", double.Parse(prz.ToString()));
+            var sp = t.Split('.');
+            var l1 = string.Format("{0:n0}", int.Parse(sp[0])) + '.' + sp[1];
+            return l1;
+        }
+
         private static PdfPTable CreateBillingDetail()
         {
+            var row_height = 30f;
+            var avg_font_size = 13f;
+
+            var text_date_begin = QueryManager.GetSessionDateTimeBegin().ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture);
+            var text_date_end = QueryManager.GetSessionDateTimeEnd().ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture);
+            var text_total_usage_transaction = string.Format("{0:n0}", count_total);
+            var text_package_detail = new List<string[]>()
+            {
+                new string[]{ "Unlimited", "1", "416666.67", },
+                //new string[]{ "pack 2", "1.5", "416666.67", },
+                //new string[]{ "pack 3", "2.0", "416666.67", },
+                //new string[]{ "pack 4", "0", "416666.67", },
+            };
+
+            // price per unit --> total price
+            var array_price = Array.ConvertAll(text_package_detail.ToArray(), new Converter<string[], double>(arr =>
+            {
+                var u = double.Parse(arr[1]);
+                var ppu = double.Parse(arr[2]);
+                return u * ppu;
+            }));
+            var total_price = 0d;
+            array_price.ToList().ForEach(n =>
+            {
+                total_price += n;
+            });
+            var text_total_cost = total_price.ToString(CultureInfo.CreateSpecificCulture("en-US"));
+
+
             var table_main = new PdfPTable(1);
             table_main.SetWidths(new float[] { 100f });
             table_main.WidthPercentage = 100;
@@ -551,62 +628,79 @@ namespace JobReport
             var table_01 = new PdfPTable(1);
             table_01.SetWidths(new float[] { 100f });
             table_01.WidthPercentage = 100;
-            table_01.AddCell("Billing Detail for PTT");
-            table_main.AddCell(table_01);
 
-            var table_02 = new PdfPTable(2);
-            table_02.SetWidths(new float[] { 50f, 50f });
-            table_02.WidthPercentage = 100;
-            table_02.AddCell("From");
-            table_02.AddCell("[System.String]");
-            table_02.AddCell("To");
-            table_02.AddCell("[System.String]");
-            table_main.AddCell(table_02);
+            table_01.AddCell(new PdfPCell(new Phrase(new Chunk("Billing Detail for " + Program.AppName, GetFont(15f, Font.BOLD, ColorWhite))))
+            {
+                Border = 0,
+                BackgroundColor = ColorOrangeHard,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+            });
+
+            table_main.AddCell(new PdfPCell(table_01) { BorderWidth = 0, FixedHeight = 35, });
+
+            var table_02_from = new PdfPTable(2);
+            table_02_from.SetWidths(new float[] { 20f, 80f });
+            table_02_from.WidthPercentage = 100;
+            table_02_from.AddCell(new PdfPCell(new Phrase(new Chunk("From", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
+            table_02_from.AddCell(new PdfPCell(new Phrase(new Chunk(text_date_begin, GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, });
+
+            var table_02_to = new PdfPTable(2);
+            table_02_to.SetWidths(new float[] { 20f, 80f });
+            table_02_to.WidthPercentage = 100;
+            table_02_to.AddCell(new PdfPCell(new Phrase(new Chunk("To", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
+            table_02_to.AddCell(new PdfPCell(new Phrase(new Chunk(text_date_end, GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, });
+
+            table_main.AddCell(new PdfPCell(table_02_from) { BorderWidth = 0, FixedHeight = row_height, });
+            table_main.AddCell(new PdfPCell(table_02_to) { BorderWidth = 0, FixedHeight = row_height, });
 
             var table_03 = new PdfPTable(2);
             table_03.SetWidths(new float[] { 50f, 50f });
             table_03.WidthPercentage = 100;
-            table_03.AddCell("Total Usage Transaction");
-            table_03.AddCell("[System.String]");
-            table_main.AddCell(table_03);
+            table_03.AddCell(new PdfPCell(new Phrase(new Chunk("Total Usage Transaction", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
+            table_03.AddCell(new PdfPCell(new Phrase(new Chunk(text_total_usage_transaction, GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, HorizontalAlignment = Element.ALIGN_RIGHT, PaddingRight = 20, });
+            table_main.AddCell(new PdfPCell(table_03) { BorderWidth = 0, FixedHeight = row_height, });
 
             // --------------------------------------------
 
-            table_main.AddCell(" ");
-            table_main.AddCell(" ");
+            table_main.AddCell(new PdfPCell(new Phrase(new Chunk(" ", GetFont(5, Font.BOLD, ColorDark)))) { BorderWidth = 0, });
+            table_main.AddCell(new PdfPCell(new Phrase(new Chunk(" ", GetFont(5, Font.BOLD, ColorDark)))) { BorderWidth = 0, });
 
             // -------------------------------------------- detail 2
 
             var table_04 = new PdfPTable(4);
-            table_04.SetWidths(new float[] { 25f, 25f, 25f, 25f });
+            table_04.SetWidths(new float[] { 35f, 15f, 25f, 25f });
             table_04.WidthPercentage = 100;
-            table_04.AddCell("Detail");
-            table_04.AddCell("Unit");
-            table_04.AddCell("Price/Unit");
-            table_04.AddCell("Cost");
-            table_main.AddCell(table_04);
+            table_04.AddCell(new PdfPCell(new Phrase(new Chunk("Detail", GetFont(avg_font_size, Font.BOLD, ColorWhite)))) { BorderWidth = 0, BackgroundColor = ColorOrangeHard, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, });
+            table_04.AddCell(new PdfPCell(new Phrase(new Chunk("Unit", GetFont(avg_font_size, Font.BOLD, ColorWhite)))) { BorderWidth = 0, BackgroundColor = ColorOrangeHard, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, });
+            table_04.AddCell(new PdfPCell(new Phrase(new Chunk("Price/Unit (THB)", GetFont(avg_font_size, Font.BOLD, ColorWhite)))) { BorderWidth = 0, BackgroundColor = ColorOrangeHard, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, });
+            table_04.AddCell(new PdfPCell(new Phrase(new Chunk("Cost (THB)", GetFont(avg_font_size, Font.BOLD, ColorWhite)))) { BorderWidth = 0, BackgroundColor = ColorOrangeHard, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, });
+            table_main.AddCell(new PdfPCell(table_04) { BorderWidth = 0, FixedHeight = row_height, });
 
             var table_05 = new PdfPTable(1);
             table_05.SetWidths(new float[] { 100f });
             table_05.WidthPercentage = 100;
-            table_05.AddCell("Current Package");
-            table_main.AddCell(table_05);
+            table_05.AddCell(new PdfPCell(new Phrase(new Chunk("Current Package", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, BackgroundColor = ColorOrangeSoft, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
+            table_main.AddCell(new PdfPCell(table_05) { BorderWidth = 0, FixedHeight = row_height, });
 
-            var table_06 = new PdfPTable(4);
-            table_06.SetWidths(new float[] { 25f, 25f, 25f, 25f });
-            table_06.WidthPercentage = 100;
-            table_06.AddCell("Package \"Unlimited\"");
-            table_06.AddCell("1");
-            table_06.AddCell("[System.String]");
-            table_06.AddCell("[System.String]");
-            table_main.AddCell(table_06);
+            for (int i = 0; i < text_package_detail.Count; i++)
+            {
+                var table_06 = new PdfPTable(4);
+                table_06.SetWidths(new float[] { 35f, 15f, 25f, 25f });
+                table_06.WidthPercentage = 100;
+                table_06.AddCell(new PdfPCell(new Phrase(new Chunk("Package \"" + text_package_detail[i][0] + "\"", GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, HorizontalAlignment = Element.ALIGN_LEFT, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
+                table_06.AddCell(new PdfPCell(new Phrase(new Chunk(text_package_detail[i][1], GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, });
+                table_06.AddCell(new PdfPCell(new Phrase(new Chunk(money_format(text_package_detail[i][2]), GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, HorizontalAlignment = Element.ALIGN_RIGHT, VerticalAlignment = Element.ALIGN_MIDDLE, });
+                table_06.AddCell(new PdfPCell(new Phrase(new Chunk(money_format(array_price[i].ToString()), GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, HorizontalAlignment = Element.ALIGN_RIGHT, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingRight = 20, });
+                table_main.AddCell(new PdfPCell(table_06) { BorderWidth = 0, FixedHeight = row_height, });
+            }
 
             var table_07 = new PdfPTable(2);
             table_07.SetWidths(new float[] { 50f, 50f });
             table_07.WidthPercentage = 100;
-            table_07.AddCell("Total Cost");
-            table_07.AddCell("[System.String]");
-            table_main.AddCell(table_07);
+            table_07.AddCell(new PdfPCell(new Phrase(new Chunk("Total Cost", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, BackgroundColor = ColorOrangeHard, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
+            table_07.AddCell(new PdfPCell(new Phrase(new Chunk(money_format(text_total_cost) + "  ", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, BackgroundColor = ColorOrangeHard, VerticalAlignment = Element.ALIGN_MIDDLE, HorizontalAlignment = Element.ALIGN_RIGHT, PaddingRight = 20, });
+            table_main.AddCell(new PdfPCell(table_07) { BorderWidth = 0, FixedHeight = row_height, });
 
             // --------------------------------------------
 
@@ -615,6 +709,9 @@ namespace JobReport
 
         public static void CreatePdfReport()
         {
+            // title
+            var text_title = CreateReportTitle();
+
             // header table
             var table_header = CreateTableHeader();
 
@@ -654,6 +751,7 @@ namespace JobReport
             {
                 Border = 0,
                 HorizontalAlignment = Element.ALIGN_LEFT,
+
             });
 
             // table in the right
@@ -682,6 +780,7 @@ namespace JobReport
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));
+            document.Add(text_title);
             document.Add(table_header);
             document.Add(new Paragraph(" "));
             document.Add(new Paragraph(" "));

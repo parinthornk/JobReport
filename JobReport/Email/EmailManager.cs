@@ -20,7 +20,7 @@ namespace JobReport
 
             var file_name = GenerateUI.GetPdfFileName();
             var date_begin = QueryManager.GetSessionDateTimeBegin().ToString("yyyy-MM-dd");
-            var date_end = QueryManager.GetSessionDateTimeEnd().AddDays(-1).ToString("yyyy-MM-dd");
+            var date_end = QueryManager.GetSessionDateTimeEnd().ToString("yyyy-MM-dd");
 
             using (MailMessage mm = new MailMessage(email, email_to))
             {

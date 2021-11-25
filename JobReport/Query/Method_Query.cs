@@ -22,6 +22,9 @@ namespace JobReport
         public List<log_API_for_Time> GetApplicationTimeLog(double unix_start, double unix_stop)
         {
             string query = string.Format("SELECT ApplicationDisplayName as ApplicationName, COUNT(ApplicationDisplayName) as HIT FROM APIRequestLog INNER JOIN cfg_applicationdisplayname on cfg_applicationdisplayname.applicationname=apirequestlog.applicationname and apirequestlog.applicationowner = cfg_applicationdisplayname.applicationowner WHERE requesttimestamp between {0:00} and {1:00}  GROUP bY ApplicationDisplayName", unix_start, unix_stop);
+
+            Console.WriteLine(query);
+            
             DataTable dt = Or.ExecuteQuery(query);
             List<log_API_for_Time> appUsage = new List<log_API_for_Time>();
             appUsage = (from DataRow dr in dt.Rows

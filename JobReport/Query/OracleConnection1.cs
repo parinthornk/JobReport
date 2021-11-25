@@ -30,7 +30,7 @@ namespace JobReport
         {
             Oracle.ManagedDataAccess.Client.OracleConnection conn = new Oracle.ManagedDataAccess.Client.OracleConnection();
             //using connection string attributes to connect to Oracle Database
-            conn.ConnectionString = Program.GetConnectionString();
+            conn.ConnectionString = Program.ConnectionString;
 
             {
                 using (OracleCommand command = new OracleCommand(query, conn))
