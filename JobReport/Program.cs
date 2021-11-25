@@ -28,7 +28,7 @@ namespace JobReport
         public static string AppName;
         public static string ConnectionString;
 
-        public static bool demo = true;
+        public static bool demo = false;
 
         public static void Main(string[] args)
         {
