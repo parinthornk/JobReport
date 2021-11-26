@@ -12,38 +12,44 @@ namespace JobReport
 
         public static void LoadData()
         {
-            Calculation Cal = new Calculation();
-            Method_Query MQ = new Method_Query();
-
-            ////----- 1
-            List<log_API_for_Time> LTime = MQ.GetApplicationTimeLog(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
-
-            foreach (log_API_for_Time LT in LTime)
+            if (!Program.demo)
             {
-                Console.WriteLine("GetApplicationTimeLog  : " + LT.ApplicationName + " , " + LT.HIT);
+                Calculation Cal = new Calculation();
+                Method_Query MQ = new Method_Query();
+
+                var tm = MQ.GetTotalCost(GetSessionDateTimeBegin().Month.ToString());
+
+                ////----- 1
+                List<log_API_for_Time> LTime = MQ.GetApplicationTimeLog(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+
+                foreach (log_API_for_Time LT in LTime)
+                {
+                    Console.WriteLine("GetApplicationTimeLog  : " + LT.ApplicationName + " , " + LT.HIT);
+                }
+
+                ////----- 2
+                List<AverageTime> LGAT = MQ.GetAverageTime(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+
+                foreach (AverageTime T in LGAT)
+                {
+                    Console.WriteLine("GetAverageTime  : " + " avgservice = " + T.AGVservice + " , avgbackend = " + T.AGVbackend + " , avgresponse = " + T.AGVresponse);
+                }
+
+                ////----- 3
+                List<Timestamprequest> LTP = MQ.GetTimestamprequest(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+
+                Console.WriteLine("LTP.Count, " + LTP.Count);
+
+                ////----- 4
+                double PG = MQ.GetTotalCost(GetQueryTimeBegin().Month.ToString());
+                Console.WriteLine("GetTotalCost  : " + PG);
+
+                // these will be used in UI generation
+                list_hit = new List<log_API_for_Time>(LTime);
+                list_avg = new List<AverageTime>(LGAT);
+                list_timestamp = new List<Timestamprequest>(LTP);
+                total_cost = PG;
             }
-
-            ////----- 2
-            List<AverageTime> LGAT = MQ.GetAverageTime(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
-
-            foreach (AverageTime T in LGAT)
-            {
-                Console.WriteLine("GetAverageTime  : " + " avgservice = " + T.AGVservice + " , avgbackend = " + T.AGVbackend + " , avgresponse = " + T.AGVresponse);
-            }
-
-            ////----- 3
-            List<Timestamprequest> LTP = MQ.GetTimestamprequest(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
-
-            /*foreach (Timestamprequest T in LTP)
-            {
-                Console.WriteLine("GetTimestamprequest  : " + " Requesttimestamp = " + T.Requesttimestamp + " , Responsecode = " + T.Responsecode + " , Servicetime = " + T.Servicetime);
-            }*/
-            Console.WriteLine("LTP.Count, " + LTP.Count);
-
-            // these will be used in UI generation
-            list_hit = new List<log_API_for_Time>(LTime);
-            list_avg = new List<AverageTime>(LGAT);
-            list_timestamp = new List<Timestamprequest>(LTP);
         }
 
         internal static void CalculateSessionDateTime()
@@ -120,6 +126,16 @@ namespace JobReport
             }
 
             return list_avg;
+        }
+
+        private static double total_cost;
+        public static double GetTotalCost()
+        {
+            if (Program.demo)
+            {
+                total_cost = 416666.67;
+            }
+            return total_cost;
         }
 
         private static List<Timestamprequest> list_timestamp;

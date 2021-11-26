@@ -598,7 +598,7 @@ namespace JobReport
             var text_total_usage_transaction = string.Format("{0:n0}", count_total);
             var text_package_detail = new List<string[]>()
             {
-                new string[]{ "Unlimited", "1", "416666.67", },
+                new string[]{ "Unlimited", "1", money_format(QueryManager.GetTotalCost()), },
                 //new string[]{ "pack 2", "1.5", "416666.67", },
                 //new string[]{ "pack 3", "2.0", "416666.67", },
                 //new string[]{ "pack 4", "0", "416666.67", },

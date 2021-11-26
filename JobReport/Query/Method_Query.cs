@@ -71,6 +71,19 @@ namespace JobReport
                         }).ToList();
             return appUsage;
         }
+
+        public double GetTotalCost(string MONTH)
+        {
+            Console.WriteLine("In method GetTotalCost");
+
+            string query = string.Format("SELECT PRICE FROM CFG_UNILIMITEDCHARGE WHERE MONTH ='{0}' ", MONTH);
+
+            DataTable dt = Or.ExecuteQuery(query);
+            DataRow dr = dt.Rows[0];
+            double TotalPrice = double.Parse(dr["PRICE"].ToString());
+
+            return TotalPrice;
+        }
     }
 
 

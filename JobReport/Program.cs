@@ -22,8 +22,6 @@ namespace JobReport
     {
         private static string AppName_PTT = "PTT";
         private static string AppName_OR = "OR";
-        private static string ConnectionString_PTT = "Data Source=10.232.108.221:1521/WSO2PRD;User Id=AM_ANALYTICS_SHARE;Password=WSO2PRD;Min Pool Size=15;Connection Lifetime=180;";
-        private static string ConnectionString_OR = "Data Source=10.232.108.221:1561/PTTORWSO2PRD;User Id=AM_ANALYTICS_SHARE;Password=WSO2PTTOR;Min Pool Size=15;Connection Lifetime=180;";
 
         public static string AppName;
         public static string ConnectionString;
@@ -33,14 +31,14 @@ namespace JobReport
         public static void Main(string[] args)
         {
             QueryManager.CalculateSessionDateTime();
-            
+
             AppName = AppName_PTT;
-            ConnectionString = ConnectionString_PTT;
+            ConnectionString = ConfigurationManager.ConnectionStrings["connStrPTT"].ToString();
             QueryManager.LoadData();
             GenerateUI.CreatePdfReport();
             
             AppName = AppName_OR;
-            ConnectionString = ConnectionString_OR;
+            ConnectionString = ConfigurationManager.ConnectionStrings["connStrOR"].ToString();
             QueryManager.LoadData();
             GenerateUI.CreatePdfReport();
 
