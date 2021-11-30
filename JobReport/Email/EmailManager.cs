@@ -18,6 +18,9 @@ namespace JobReport
             var email_server = ConfigurationManager.AppSettings["email_server"];
             var email_password = ConfigurationManager.AppSettings["email_password"];
 
+            var email_port = ConfigurationManager.AppSettings["email_port"];
+            var email_ssl_enable = ConfigurationManager.AppSettings["email_ssl_enable"];
+
             var date_begin = QueryManager.GetSessionDateTimeBegin().ToString("yyyy-MM-dd");
             var date_end = QueryManager.GetSessionDateTimeEnd().ToString("yyyy-MM-dd");
 
@@ -30,13 +33,17 @@ namespace JobReport
                 mm.Attachments.Add(new Attachment(GenerateUI.GetPdfFileName(Program.AppName_OR) + ".pdf"));
 
                 mm.IsBodyHtml = false;
+
+
                 var smtp = new SmtpClient();
                 smtp.Host = email_server;
-                smtp.EnableSsl = true;
-                NetworkCredential NetworkCred = new NetworkCredential(email, email_password);
+                smtp.EnableSsl = email_ssl_enable.ToLower() == "true";
+                
+                NetworkCredential NetworkCred = new NetworkCredential(email.Trim(), email_password.Trim());
                 smtp.UseDefaultCredentials = true;
                 smtp.Credentials = NetworkCred;
-                smtp.Port = 587;
+
+                smtp.Port = int.Parse(email_port);
                 smtp.Send(mm);
             }
         }

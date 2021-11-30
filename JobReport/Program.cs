@@ -35,9 +35,9 @@ namespace JobReport
         {
             QueryManager.CalculateSessionDateTime(DateTime.Now, args);
 
-            GenerateReport(AppName_PTT);
+            /*GenerateReport(AppName_PTT);
 
-            GenerateReport(AppName_OR);
+            GenerateReport(AppName_OR);*/
 
             EmailManager.Send();
         }
