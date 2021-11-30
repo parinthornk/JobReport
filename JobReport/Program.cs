@@ -1,6 +1,5 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
-using jobReport.DataServices;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -20,29 +19,48 @@ namespace JobReport
 {
     public class Program
     {
-        private static string AppName_PTT = "PTT";
-        private static string AppName_OR = "OR";
+        public static readonly string AppName_PTT = "PTT";
+        public static readonly string AppName_OR = "OR";
 
         public static string AppName;
         public static string ConnectionString;
+
+        public static int ErrorCount = 0;
+        public static int RetryCount = 3;
+        public static int RetryInterval = 10 * 60 * 1000;
 
         public static bool demo = false;
 
         public static void Main(string[] args)
         {
-            QueryManager.CalculateSessionDateTime();
+            QueryManager.CalculateSessionDateTime(DateTime.Now, args);
 
-            AppName = AppName_PTT;
-            ConnectionString = ConfigurationManager.ConnectionStrings["connStrPTT"].ToString();
-            QueryManager.LoadData();
-            GenerateUI.CreatePdfReport();
-            
-            AppName = AppName_OR;
-            ConnectionString = ConfigurationManager.ConnectionStrings["connStrOR"].ToString();
-            QueryManager.LoadData();
-            GenerateUI.CreatePdfReport();
+            GenerateReport(AppName_PTT);
+
+            GenerateReport(AppName_OR);
 
             EmailManager.Send();
+        }
+
+        private static void GenerateReport(string app)
+        {
+            AppName = app;
+            for (int i = 0; i < RetryCount; i++)
+            {
+                ErrorCount = 0;
+                QueryManager.LoadData();
+                GenerateUI.CreatePdfReport();
+                if (ErrorCount == 0)
+                {
+                    break;
+                }
+                Thread.Sleep(RetryInterval);
+            }
+            if (ErrorCount > 0)
+            {
+                // report error via email
+                EmailManager.ReportError();
+            }
         }
     }
 }

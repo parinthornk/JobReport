@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,15 +13,26 @@ namespace JobReport
 
         public static void LoadData()
         {
+            Program.ConnectionString = ConfigurationManager.ConnectionStrings["connStr" + Program.AppName].ToString();
             if (!Program.demo)
             {
                 Calculation Cal = new Calculation();
                 Method_Query MQ = new Method_Query();
 
-                var tm = MQ.GetTotalCost(GetSessionDateTimeBegin().Month.ToString());
+                List<log_API_for_Time> LTime = new List<log_API_for_Time>();
+                List<AverageTime> LGAT = new List<AverageTime>();
+                List<ResponseHit> LTP = new List<ResponseHit>();
+                double PG = 0;
 
                 ////----- 1
-                List<log_API_for_Time> LTime = MQ.GetApplicationTimeLog(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+                try
+                {
+                    LTime = MQ.GetApplicationTimeLog(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+                }
+                catch
+                {
+                    LTime = new List<log_API_for_Time>();
+                }
 
                 foreach (log_API_for_Time LT in LTime)
                 {
@@ -28,7 +40,14 @@ namespace JobReport
                 }
 
                 ////----- 2
-                List<AverageTime> LGAT = MQ.GetAverageTime(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+                try
+                {
+                    LGAT = MQ.GetAverageTime(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+                }
+                catch
+                {
+                    LGAT = new List<AverageTime>();
+                }
 
                 foreach (AverageTime T in LGAT)
                 {
@@ -36,33 +55,43 @@ namespace JobReport
                 }
 
                 ////----- 3
-                List<Timestamprequest> LTP = MQ.GetTimestamprequest(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+                try
+                {
+                    LTP = MQ.GetTimestamprequest5minut(Cal.GetUnix(GetQueryTimeBegin()), Cal.GetUnix(GetQueryTimeEnd()));
+                }
+                catch
+                {
+                    LTP = new List<ResponseHit>();
+                }
 
                 Console.WriteLine("LTP.Count, " + LTP.Count);
 
                 ////----- 4
-                double PG = MQ.GetTotalCost(GetQueryTimeBegin().Month.ToString());
+                try
+                {
+                    PG = MQ.GetTotalCost(GetQueryTimeBegin().Month.ToString());
+                }
+                catch
+                {
+                    PG = 0;
+                }
+
                 Console.WriteLine("GetTotalCost  : " + PG);
 
                 // these will be used in UI generation
                 list_hit = new List<log_API_for_Time>(LTime);
                 list_avg = new List<AverageTime>(LGAT);
-                list_timestamp = new List<Timestamprequest>(LTP);
+                list_timestamp = new List<ResponseHit>(LTP);
                 total_cost = PG;
             }
         }
 
-        internal static void CalculateSessionDateTime()
+        internal static void CalculateSessionDateTime(DateTime now, string[] arguments)
         {
-            // time begin --> the begin of the last month
-            // time end   --> the end of the last month
-            var now = DateTime.Now;
-            time_end = new DateTime(now.Year, now.Month, 1, 0, 0, 0);
-            var tmp = time_end.AddDays(-1);
-            time_begin = new DateTime(tmp.Year, tmp.Month, 1, 0, 0, 0);
+            var dates = SessionTime.GetSessionRange(now, arguments);
 
-            // use 23:59:59.999 on the last day of month
-            time_end = new DateTime(time_end.Ticks - 1);
+            time_begin = dates[0];
+            time_end = dates[1];
 
             time_query_begin = time_begin.ToUniversalTime();
             time_query_end = time_end.ToUniversalTime();
@@ -138,23 +167,23 @@ namespace JobReport
             return total_cost;
         }
 
-        private static List<Timestamprequest> list_timestamp;
-        public static List<Timestamprequest> GetListTimeStamp()
+        private static List<ResponseHit> list_timestamp;
+        public static List<ResponseHit> GetListTimeStamp()
         {
             if (Program.demo)
             {
                 if (list_timestamp == null)
                 {
-                    var read = System.IO.File.ReadAllLines("time_stamp.txt");
-                    list_timestamp = new List<Timestamprequest>();
+                    var read = System.IO.File.ReadAllLines("GetTimestamprequest5minut.txt");
+                    list_timestamp = new List<ResponseHit>();
                     foreach (var line in read)
                     {
-                        var sep = line.Split(new string[] { ", " }, StringSplitOptions.None);
-                        list_timestamp.Add(new Timestamprequest()
+                        var sep = line.Split(new string[] { "|" }, StringSplitOptions.None);
+                        list_timestamp.Add(new ResponseHit()
                         {
-                            Requesttimestamp = sep[0],
-                            Responsecode = int.Parse(sep[1]),
-                            Servicetime = int.Parse(sep[2]),
+                            requestTimestamp = double.Parse(sep[2]),
+                            HIT = int.Parse(sep[1]),
+                            AvgServiceTime = sep[0],
                         });
                     }
                 }

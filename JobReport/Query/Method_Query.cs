@@ -33,7 +33,7 @@ namespace JobReport
                             ApplicationName = dr["ApplicationName"].ToString(),
                             HIT = int.Parse(dr["HIT"].ToString())
                         }).ToList();
-            return appUsage;
+            return new List<log_API_for_Time>(appUsage);
         }
 
         // GetAverageTime
@@ -51,25 +51,40 @@ namespace JobReport
                             AGVresponse = double.Parse(dr["avgresponse"].ToString())
 
                         }).ToList();
-            return appUsage;
+            return new List<AverageTime>(appUsage);
         }
 
-        // Timestamprequest
+        // GetTimestamprequest5minut
 
-        public List<Timestamprequest> GetTimestamprequest(double unix_start, double unix_stop)
+        public List<ResponseHit> GetTimestamprequest5minut(double unix_start, double unix_stop)
         {
-            string query = string.Format("SELECT requesttimestamp,responsecode,servicetime FROM apirequestlog WHERE requesttimestamp between {0} and {1}", unix_start, unix_stop);
+            string query = string.Format("SELECT requesttimestamp,responsecode,servicetime FROM apirequestlog WHERE requesttimestamp between {0} and {1} ", unix_start, unix_stop);
             DataTable dt = Or.ExecuteQuery(query);
-            List<Timestamprequest> appUsage = new List<Timestamprequest>();
+            List<Response> appUsage = new List<Response>();
             appUsage = (from DataRow dr in dt.Rows
-                        select new Timestamprequest()
+                        select new Response()
                         {
-                            Requesttimestamp = dr["Requesttimestamp"].ToString(),
-                            Responsecode = int.Parse(dr["Responsecode"].ToString()),
-                            Servicetime = int.Parse(dr["Servicetime"].ToString())
-
+                            responseCode = int.Parse(dr["responsecode"].ToString()),
+                            requestTimestamp = double.Parse(dr["requesttimestamp"].ToString()),
+                            AvgServiceTime = int.Parse(dr["servicetime"].ToString())
                         }).ToList();
-            return appUsage;
+            var groups = appUsage.GroupBy(x =>
+            {
+                var stamp = x.requestTimestamp;
+                stamp = stamp - (stamp % (5000 * 60));
+                return stamp;
+            }).Select(g => new ResponseHit { requestTimestamp = g.Key, HIT = g.Count(s => s.responseCode == 200), AvgServiceTime = string.Format("{0:n}", g.Average(x => x.AvgServiceTime)) }).OrderBy(x => x.requestTimestamp).ToList();
+
+            // save for test
+            var listString = new List<string>();
+            foreach (var x in groups)
+            {
+                var text = x.AvgServiceTime + "|" + x.HIT + "|" + x.requestTimestamp;
+                listString.Add(text);
+            }
+            System.IO.File.WriteAllLines("GetTimestamprequest5minut.txt", listString);
+
+            return new List<ResponseHit>(groups);
         }
 
         public double GetTotalCost(string MONTH)
@@ -137,4 +152,18 @@ namespace JobReport
         public int Servicetime { get; set; }
     }
 
+    public class Response
+    {
+        public double requestTimestamp { get; set; }
+        public int responseCode { get; set; }
+        public int AvgServiceTime { get; set; }
+    }
+
+    public class ResponseHit
+    {
+        public double requestTimestamp { get; set; }
+        public int HIT { get; set; }
+
+        public string AvgServiceTime { get; set; }
+    }
 }

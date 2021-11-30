@@ -18,17 +18,17 @@ namespace JobReport
             var email_server = ConfigurationManager.AppSettings["email_server"];
             var email_password = ConfigurationManager.AppSettings["email_password"];
 
-            var file_name = GenerateUI.GetPdfFileName();
             var date_begin = QueryManager.GetSessionDateTimeBegin().ToString("yyyy-MM-dd");
             var date_end = QueryManager.GetSessionDateTimeEnd().ToString("yyyy-MM-dd");
 
             using (MailMessage mm = new MailMessage(email, email_to))
             {
-                mm.Subject = file_name;
+                mm.Subject = "WSO2 Transaction Report";
                 mm.Body = $"WSO2 transaction report from {date_begin} to {date_end}.";
-                System.Net.Mail.Attachment attachment;
-                attachment = new Attachment(file_name + ".pdf");
-                mm.Attachments.Add(attachment);
+
+                mm.Attachments.Add(new Attachment(GenerateUI.GetPdfFileName(Program.AppName_PTT) + ".pdf"));
+                mm.Attachments.Add(new Attachment(GenerateUI.GetPdfFileName(Program.AppName_OR) + ".pdf"));
+
                 mm.IsBodyHtml = false;
                 var smtp = new SmtpClient();
                 smtp.Host = email_server;
@@ -38,6 +38,37 @@ namespace JobReport
                 smtp.Credentials = NetworkCred;
                 smtp.Port = 587;
                 smtp.Send(mm);
+            }
+        }
+
+        internal static void ReportError()
+        {
+            try
+            {
+                var email = ConfigurationManager.AppSettings["email"];
+                var email_to = ConfigurationManager.AppSettings["email_to"];
+                var email_server = ConfigurationManager.AppSettings["email_server"];
+                var email_password = ConfigurationManager.AppSettings["email_password"];
+
+                using (MailMessage mm = new MailMessage(email, email_to))
+                {
+                    mm.Subject = "Error Connect to Oracle DB";
+                    mm.Body = $"Failed to connect to Oracle DB, " + DateTime.Now.ToString();
+
+                    mm.IsBodyHtml = false;
+                    var smtp = new SmtpClient();
+                    smtp.Host = email_server;
+                    smtp.EnableSsl = true;
+                    NetworkCredential NetworkCred = new NetworkCredential(email, email_password);
+                    smtp.UseDefaultCredentials = true;
+                    smtp.Credentials = NetworkCred;
+                    smtp.Port = 587;
+                    smtp.Send(mm);
+                }
+            }
+            catch
+            {
+
             }
         }
     }

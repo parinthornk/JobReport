@@ -1,6 +1,5 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
-using jobReport.DataServices;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -62,98 +61,6 @@ namespace JobReport
             }
         }
 
-        private static void Main_old(string[] args)
-        {
-            bool isVPN = false;
-            if (NetworkInterface.GetIsNetworkAvailable())
-            {
-                NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-                foreach (NetworkInterface Interface in interfaces)
-                {
-                    if (Interface.OperationalStatus == OperationalStatus.Up && Interface.Description.Contains("Cisco"))
-                    {
-                        isVPN = true;
-                        break;
-                    }
-                }
-            }
-            if (!isVPN)
-            {
-                //doVPN();
-            }
-            Chart Chart1 = new Chart();
-
-            DateTime dt = DateTime.Now;
-            string startDate = new DateTime(dt.Year, dt.Month - 1, 1).ToString("MM/dd/yyyy");
-            string endDate = new DateTime(dt.Year, dt.Month - 1, DateTime.DaysInMonth(dt.Year, dt.Month - 1)).ToString("MM/dd/yyyy");
-            var z = new AnalyticsData().GetApplicationUsage(startDate, endDate);
-            //var z = new AnalyticsData().GetApplicationUsage("10/1/2021", "10/31/2021");
-            Chart1.Size = new System.Drawing.Size(800, 600);
-            string[] x = (from p in z
-                          orderby p.HIT ascending
-                          select p.ApplicationName).ToArray();
-
-            //Get the Total of Orders for each City.
-            int[] y = (from p in z
-                       orderby p.HIT ascending
-                       select p.HIT).ToArray();
-            Chart1.Series.Add("Application Usage");
-            Chart1.Series[0].ChartType = SeriesChartType.Pie;
-            Chart1.Series[0].Points.DataBindXY(x, y);
-            Chart1.Series[0].CustomProperties = "PieLabelStyle=Outside";
-            Chart1.ChartAreas.Add("ss");
-            Chart1.ChartAreas[0].Area3DStyle.Enable3D = true;
-            Chart1.ChartAreas[0].Area3DStyle.LightStyle = System.Windows.Forms.DataVisualization.Charting.LightStyle.Realistic;
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            Chart1.SaveImage(ms, ChartImageFormat.Jpeg);
-            ms.Seek(0, System.IO.SeekOrigin.Begin);
-            iTextSharp.text.Image pic = iTextSharp.text.Image.GetInstance(ms);
-            if (pic.Height > pic.Width)
-            {
-                //Maximum height is 800 pixels.
-                float percentage = 0.0f;
-                percentage = 450 / pic.Height;
-                pic.ScalePercent(percentage * 100);
-            }
-            else
-            {
-                //Maximum width is 600 pixels.
-                float percentage = 0.0f;
-                percentage = 350 / pic.Width;
-                pic.ScalePercent(percentage * 100);
-            }
-            Font bold = new Font(Font.FontFamily.COURIER, 9f, Font.NORMAL, new BaseColor(163, 21, 21));
-
-
-            PdfPTable PdfTable = new PdfPTable(3);//#1
-            float[] tbwidths = { 50f, 50f, 50f };
-            PdfTable.SetWidths(tbwidths);
-            PdfTable.WidthPercentage = 100;
-            PdfPCell PdfCell = null;
-            PdfCell = new PdfPCell(new Phrase(new Chunk("1", bold)));//#2
-            PdfCell.Border = 0;
-            PdfCell.HorizontalAlignment = Element.ALIGN_CENTER;
-            PdfTable.AddCell(PdfCell);
-            PdfCell = new PdfPCell(new Phrase(new Chunk("2", bold)));//#3
-            PdfCell.Border = 0;
-            PdfCell.HorizontalAlignment = Element.ALIGN_CENTER;
-            PdfTable.AddCell(PdfCell);
-            PdfCell = new PdfPCell(new Phrase(new Chunk("3", bold)));//#4
-            PdfCell.Border = 0;
-            PdfCell.HorizontalAlignment = Element.ALIGN_CENTER;
-            PdfTable.AddCell(PdfCell);
-            Document document = new Document(PageSize.A4);
-            FileStream fs = new FileStream("Chapter1_Example1.pdf", FileMode.Create, FileAccess.Write, FileShare.None);
-            PdfWriter.GetInstance(document, fs);
-            document.Open();
-            document.Add(PdfTable);
-            document.Add(pic);
-            document.Close();
-
-
-            //smtp sendmail boripan.c@,tawit.c@,arisa.p@ ,zpanuwat.p@,zphumet.a@,parinthorn.k@
-        }
-
         private static PdfPTable CreateReportTitle()
         {
             var font_style = GetFont(12f, Font.NORMAL, ColorDarkBlue);
@@ -164,7 +71,7 @@ namespace JobReport
             {
                 Border = 0,
                 HorizontalAlignment = Element.ALIGN_LEFT,
-                PaddingTop = 10f,
+                PaddingTop = 30f,
                 PaddingBottom = 10f,
             });
             return table;
@@ -257,13 +164,23 @@ namespace JobReport
             // response time
             var list_avg = QueryManager.GetListAVG();
 
-            var avg_serv = list_avg[0].AGVservice;
-            var avg_back = list_avg[0].AGVbackend;
-            var avg_resp = list_avg[0].AGVresponse;
+            var text_avg_serv = "-";
+            var text_avg_back = "-";
+            var text_avg_resp = "-";
 
-            var text_avg_serv = string.Format("{0:0.00}", avg_serv) + "ms";
-            var text_avg_back = string.Format("{0:0.00}", avg_back) + "ms";
-            var text_avg_resp = string.Format("{0:0.00}", avg_resp) + "ms";
+            try
+            {
+                var avg_serv = list_avg[0].AGVservice.ToString();
+                var avg_back = list_avg[0].AGVbackend.ToString();
+                var avg_resp = list_avg[0].AGVresponse.ToString();
+                text_avg_serv = string.Format("{0:0.00}", double.Parse(avg_serv)) + "ms";
+                text_avg_back = string.Format("{0:0.00}", double.Parse(avg_back)) + "ms";
+                text_avg_resp = string.Format("{0:0.00}", double.Parse(avg_resp)) + "ms";
+            }
+            catch
+            {
+
+            }
 
             var font_style_col_body = GetFont(14, Font.NORMAL, ColorDark);
 
@@ -483,6 +400,26 @@ namespace JobReport
                 HorizontalAlignment = Element.ALIGN_RIGHT,
                 BorderColor = new BaseColor(215, 215, 215),
             });
+            table.AddCell(new PdfPCell(new Phrase(new Chunk(string.Empty, font_style)))
+            {
+                Border = 0,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+            });
+            table.AddCell(new PdfPCell(new Phrase(new Chunk(string.Empty, font_style)))
+            {
+                Border = 0,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+            });
+            table.AddCell(new PdfPCell(new Phrase(new Chunk(string.Empty, font_style)))
+            {
+                Border = 0,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+            });
+            table.AddCell(new PdfPCell(new Phrase(new Chunk(string.Empty, font_style)))
+            {
+                Border = 0,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+            });
             return table;
         }
 
@@ -500,8 +437,8 @@ namespace JobReport
                 return log.HIT;
             }));
 
-            var width = 800;
-            var height = 600;
+            var width = 700;
+            var height = 350;
 
             Chart Chart1 = new Chart();
             Chart1.Size = new System.Drawing.Size((int)width, (int)height);
@@ -534,50 +471,115 @@ namespace JobReport
 
         private static Image CreateChartLine()
         {
-            /*var data = QueryManager.GetListHit().ToArray();
-
-            var app_hits = Array.ConvertAll(data, new Converter<log_API_for_Time, int>(log =>
+            try
             {
-                return log.HIT;
-            }));*/
+                var chart = new Chart();
 
-            var example_dict = new Dictionary<int, int>()
-            {
-                { 1, 500 },
-                { 2, 1500 },
-                { 3, 500 },
-                { 4, 2500 },
-                { 5, 500 },
-                { 6, 1500 },
-            };
+                chart.Width = 700;
+                chart.Height = 320;
+                var rescale_percentage = 47;
 
-            var width = 400;
-            var height = 300;
-            var chart = new Chart();
-            chart.Size = new System.Drawing.Size((int)width, (int)height);
-            chart.Series.Add("Number of transaction over Time");
-            chart.Series[0].ChartType = SeriesChartType.Line;
-            var ax = example_dict.Keys.ToArray();
-            var ay = example_dict.Values.ToArray();
-            chart.Series[0].Points.DataBindXY(ax, ay);
-            //chart.Series[0].CustomProperties = "PieLabelStyle=Outside";
-            var ms = new MemoryStream();
-            chart.SaveImage(ms, ChartImageFormat.Png);
-            ms.Seek(0, SeekOrigin.Begin);
-            var pic = Image.GetInstance(ms);
-            if (pic.Height > pic.Width)
-            {
-                //Maximum height is 800 pixels.
-                float percentage = 450 / pic.Height;
-                pic.ScalePercent(percentage * 100);
+                Series series = new Series();
+                ChartArea chartArea1 = new ChartArea();
+
+                chart.ChartAreas.Add(chartArea1);
+                series.BorderWidth = 2;
+                series.BorderDashStyle = ChartDashStyle.Solid;
+                series.ChartType = SeriesChartType.Line;
+                series.Color = System.Drawing.Color.Green;
+
+                var tm = QueryManager.GetListTimeStamp();
+
+                var data_y = Array.ConvertAll(tm.ToArray(), new Converter<ResponseHit, double>(res =>
+                {
+                    return res.HIT;
+                }));
+
+                var data_x = Array.ConvertAll(tm.ToArray(), new Converter<ResponseHit, DateTime>(res =>
+                {
+                    var time_utc = Calculation.unix_to_date((long)res.requestTimestamp);
+                    var time_bangkok = time_utc.AddHours(+7);
+                    return time_bangkok;
+                }));
+
+                // calculate what should be chart maximum Y
+                var max_y = data_y.Max();
+                var min_y = data_y.Min();
+                var log = Math.Log(max_y) / Math.Log(10);
+                var digits = (int)Math.Floor(log);
+                var y_interval_minimum = 1;
+                for (int i = 0; i < digits; i++) { y_interval_minimum *= 10; }
+                var max_y_axis = y_interval_minimum * (int)Math.Ceiling((max_y + 0.00) / y_interval_minimum);
+                var steps = max_y_axis / y_interval_minimum;
+                if (steps == 1 || steps == 7 || steps == 9)
+                {
+                    steps++;
+                    max_y_axis = steps * y_interval_minimum;
+                }
+
+                // calculate interval of y axis
+                var interval_map = new Dictionary<int, double>()
+                {
+                    { 2, 0.05 },
+                    { 3, 0.10 },
+                    { 4, 0.10 },
+                    { 5, 0.10 },
+                    { 6, 0.20 },
+                    { 8, 0.20 },
+                    { 10, 0.20 },
+                };
+                var y_interval = 10 * (int)(Math.Round(y_interval_minimum * interval_map[steps]));
+
+                // plot XY values
+                for (int i = 0; i < data_y.Length; i++)
+                {
+                    series.Points.AddXY(data_x[i], data_y[i]);
+                }
+
+                // points color
+                for (int i = 0; i < series.Points.Count; i++)
+                {
+                    series.Points[i].Color = System.Drawing.Color.FromArgb(255, 32, 109, 215);
+                }
+
+                chart.BorderlineColor = System.Drawing.Color.Red;
+                chart.BorderlineWidth = 1;
+                chart.Series.Add(series);
+
+
+                Title title = new Title();
+                title.Font = new System.Drawing.Font("Helvetica", 13f);
+                title.Text = "Transactions per 5 minutes";
+
+                chart.Titles.Add(title);
+
+
+                chart.Invalidate();
+                chart.Palette = ChartColorPalette.Fire;
+                chartArea1.AxisY.Minimum = 0;
+                chartArea1.AxisY.Maximum = max_y_axis;
+                chart.ChartAreas[0].AxisY.Interval = y_interval;
+
+                chart.ChartAreas[0].AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(255, 191, 191, 191);
+                chart.ChartAreas[0].AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(255, 191, 191, 191);
+
+                chart.ChartAreas[0].AxisY.MajorGrid.LineDashStyle = ChartDashStyle.DashDotDot;
+                chart.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.DashDotDot;
+
+                var ms = new MemoryStream();
+                chart.SaveImage(ms, ChartImageFormat.Png);
+
+                ms.Seek(0, SeekOrigin.Begin);
+                var pic = Image.GetInstance(ms);
+
+                pic.ScalePercent(rescale_percentage);
+
+                return pic;
             }
-            else
+            catch
             {
-                //Maximum width is 600 pixels.
-                float percentage = 350 / pic.Width;
-                pic.ScalePercent(percentage * 100);
+                return null;
             }
-            return pic;
         }
 
         private static string money_format(object prz)
@@ -743,7 +745,14 @@ namespace JobReport
             table_complex_left.SetWidths(new float[] { 100 });
             table_complex_left.WidthPercentage = 100;
             table_complex_left.AddCell(new PdfPCell(chart_pie) { BorderWidth = 0, });
-            //table_complex_left.AddCell(new PdfPCell(chart_line) { BorderWidth = 0, });
+            try
+            {
+                table_complex_left.AddCell(new PdfPCell(chart_line) { BorderWidth = 0, });
+            }
+            catch
+            {
+
+            }
             table_complex.AddCell(new PdfPCell(table_complex_left) { BorderWidth = 0, });
 
             // little space in the middle
@@ -770,7 +779,7 @@ namespace JobReport
             var billing_detail = CreateBillingDetail();
 
             // create file
-            var file_name = GetPdfFileName();
+            var file_name = GetPdfFileName(Program.AppName);
             var document = new Document(PageSize.A4);
             FileStream fs = new FileStream(file_name + ".pdf", FileMode.Create, FileAccess.Write, FileShare.None);
             PdfWriter.GetInstance(document, fs);
@@ -799,10 +808,10 @@ namespace JobReport
             document.Close();
         }
 
-        public static string GetPdfFileName()
+        public static string GetPdfFileName(string app_name)
         {
             var yyyy_MM = QueryManager.GetSessionDateTimeBegin().ToString("yyyy_MM", CultureInfo.CreateSpecificCulture("en-US"));
-            return "Transaction Report " + Program.AppName + " " + yyyy_MM;
+            return "Transaction Report " + app_name + " " + yyyy_MM;
         }
     }
 }

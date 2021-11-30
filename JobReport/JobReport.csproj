@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>JobReport</RootNamespace>
     <AssemblyName>JobReport</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -101,7 +101,6 @@
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
@@ -146,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Email\EmailManager.cs" />
+    <Compile Include="Query\SessionTime.cs" />
     <Compile Include="UI\GenerateUI.cs" />
     <Compile Include="Query\Calculation.cs" />
     <Compile Include="Query\Method_Query.cs" />
@@ -157,12 +157,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\jobReport.DataServices\jobReport.DataServices.csproj">
-      <Project>{5bc164c8-9fcb-4889-a838-58c1e4b8ff5c}</Project>
-      <Name>jobReport.DataServices</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Data.SqlClient.SNI.3.0.0\build\net46\Microsoft.Data.SqlClient.SNI.targets" Condition="Exists('..\packages\Microsoft.Data.SqlClient.SNI.3.0.0\build\net46\Microsoft.Data.SqlClient.SNI.targets')" />
