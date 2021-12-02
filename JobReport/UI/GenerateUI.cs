@@ -661,12 +661,11 @@ namespace JobReport
             table_03.WidthPercentage = 100;
             table_03.AddCell(new PdfPCell(new Phrase(new Chunk("Total Usage Transaction", GetFont(avg_font_size, Font.BOLD, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingLeft = 20, });
             table_03.AddCell(new PdfPCell(new Phrase(new Chunk(text_total_usage_transaction, GetFont(avg_font_size, Font.NORMAL, ColorDark)))) { BorderWidth = 0, VerticalAlignment = Element.ALIGN_MIDDLE, HorizontalAlignment = Element.ALIGN_RIGHT, PaddingRight = 20, });
-            table_main.AddCell(new PdfPCell(table_03) { BorderWidth = 0, FixedHeight = row_height, });
+            table_main.AddCell(new PdfPCell(table_03) { BorderWidth = 0, FixedHeight = row_height, BackgroundColor = ColorOrangeSoft});
 
             // --------------------------------------------
 
-            table_main.AddCell(new PdfPCell(new Phrase(new Chunk(" ", GetFont(5, Font.BOLD, ColorDark)))) { BorderWidth = 0, });
-            table_main.AddCell(new PdfPCell(new Phrase(new Chunk(" ", GetFont(5, Font.BOLD, ColorDark)))) { BorderWidth = 0, });
+            table_main.AddCell(new PdfPCell(new Phrase(new Chunk(" ", GetFont(5, Font.BOLD, ColorDark)))) { BorderWidth = 0, PaddingTop = 40f, });
 
             // -------------------------------------------- detail 2
 

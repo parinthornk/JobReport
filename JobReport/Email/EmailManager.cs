@@ -14,6 +14,11 @@ namespace JobReport
     {
         public static void Send()
         {
+            if (Program.demo)
+            {
+                return;
+            }
+
             var email = ConfigurationManager.AppSettings["email"];
             var email_to = ConfigurationManager.AppSettings["email_to"];
             var email_server = ConfigurationManager.AppSettings["email_server"];
