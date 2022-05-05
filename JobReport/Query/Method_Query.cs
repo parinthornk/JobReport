@@ -19,9 +19,17 @@ namespace JobReport
 
         // GetApplicationTimeLog
 
+        private static int app_id = 1;
+        private static string get_app_name()
+        {
+            var n = "GPSC Application " + app_id;
+            app_id++;
+            return n;
+        }
+
         public List<log_API_for_Time> GetApplicationTimeLog(double unix_start, double unix_stop)
         {
-            string query = string.Format("SELECT ApplicationDisplayName as ApplicationName, COUNT(ApplicationDisplayName) as HIT FROM APIRequestLog INNER JOIN cfg_applicationdisplayname on cfg_applicationdisplayname.applicationname=apirequestlog.applicationname and apirequestlog.applicationowner = cfg_applicationdisplayname.applicationowner WHERE requesttimestamp between {0:00} and {1:00}  GROUP bY ApplicationDisplayName", unix_start, unix_stop);
+            string query = string.Format("SELECT ApplicationDisplayName as ApplicationName, COUNT(ApplicationDisplayName) as HIT FROM APIRequestLog INNER JOIN cfg_applicationdisplayname on cfg_applicationdisplayname.applicationname = apirequestlog.applicationname and (apirequestlog.applicationowner = cfg_applicationdisplayname.applicationowner OR cfg_applicationdisplayname.APPLICATIONOWNER IS NULL) WHERE requesttimestamp between {0:00} and {1:00} GROUP bY ApplicationDisplayName", unix_start, unix_stop);
 
             Console.WriteLine(query);
             

@@ -39,7 +39,7 @@ namespace JobReport
 
             GenerateReport(AppName_OR);
 
-            EmailManager.Send();
+            //EmailManager.Send();
         }
 
         private static void GenerateReport(string app)
